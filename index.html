@@ -80,6 +80,7 @@
     box-shadow: 0 10px 30px rgba(61,23,41,0.15);
     border: 1px solid var(--line);
     animation: rise 0.5s ease;
+    cursor: pointer;
   }
   @keyframes rise{
     from{opacity:0; transform: translateY(10px);}
@@ -105,6 +106,12 @@
     color: var(--ink-soft);
     font-size: 17px;
     margin: 0;
+  }
+  .hero .tap-hint{
+    margin-top: 12px;
+    font-size: 13.5px;
+    color: var(--gold);
+    font-weight: 600;
   }
 
   /* ---------- Filter chips ---------- */
@@ -140,6 +147,11 @@
     border-radius: 16px;
     padding: 18px 18px 20px;
     margin-bottom: 14px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:active{
+    transform: scale(0.98);
   }
   .card .meta{
     display:flex;
@@ -189,6 +201,12 @@
     color: #A08C97;
     margin-top: 10px;
   }
+  .card .readmore{
+    font-size: 14px;
+    color: var(--wine);
+    font-weight: 700;
+    margin-top: 10px;
+  }
 
   footer{
     text-align:center;
@@ -196,6 +214,60 @@
     font-size: 13px;
     padding: 30px 20px 0;
   }
+
+  /* ---------- Detail Modal ---------- */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(43,27,36,0.45);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 50;
+  }
+  .overlay.show{ display:flex; }
+  .sheet{
+    background: var(--bg);
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+    padding: 22px 20px 34px;
+    animation: slideup 0.25s ease;
+  }
+  @keyframes slideup{
+    from{ transform: translateY(24px); opacity: 0; }
+    to{ transform: translateY(0); opacity: 1; }
+  }
+  .sheet .sheet-top{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .sheet .close-btn{
+    background: var(--chip-bg);
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 18px;
+    color: var(--wine-deep);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sheet h2{
+    font-size: 22px;
+    line-height: 1.4;
+    margin: 6px 0 14px;
+  }
+  .sheet .detail-body p{
+    color: var(--ink-soft);
+    font-size: 16.5px;
+    margin: 0 0 14px;
+  }
+  .sheet .detail-body p:last-child{ margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -218,10 +290,11 @@
 </header>
 
 <div class="hero-wrap">
-  <div class="hero">
-    <div class="tag">✨ 今日靈感</div>
+  <div class="hero" id="heroCard">
+    <div class="tag">🌟 今日精選</div>
     <h2 id="heroTitle"></h2>
     <p id="heroBody"></p>
+    <div class="tap-hint">點一下看完整內容 →</div>
   </div>
 </div>
 
@@ -234,100 +307,333 @@
 
 <main id="cardList"></main>
 
-<footer>由你親手為媽媽準備 · 每週更新內容</footer>
+<footer>由你親手為媽媽準備 · 每天不同內容,點卡片看更多</footer>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-top">
+      <div>
+        <span class="tag" id="sheetTag" style="display:inline-block; background:var(--gold-soft); color:#7A5B14; font-size:13px; font-weight:700; padding:4px 10px; border-radius:100px;"></span>
+      </div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+    <h2 id="sheetTitle"></h2>
+    <div class="detail-body" id="sheetBody"></div>
+  </div>
+</div>
 
 <script>
 /* =========================================================
-   內容資料區：以後每週要更新，只要在下面陣列新增一個物件即可
-   category 只能填："company"（公司動態）/ "product"（產品知識）/ "script"（銷售話術）
-   isNew 設 true 會顯示「本週新增」標籤，記得下週把舊的改回 false
+   內容資料區
+   - category: "company"(公司動態) / "product"(產品知識) / "script"(銷售話術)
+   - body: 卡片上顯示的短摘要
+   - detail: 陣列,點開後顯示的完整內容,每一項是一個段落
+   - 之後每週更新,只要在對應分類陣列後面新增物件即可,系統會自動排入每日輪播,不會手動指定「今天要顯示誰」
 ========================================================= */
-const items = [
+
+const companyItems = [
   {
-    category: "company",
     title: "UVACO 葡眾品牌升級，插旗馬來西亞吉隆坡",
-    body: "葡眾宣布推出全新品牌「UVACO 葡眾」，並將於馬來西亞吉隆坡設立營運中心，把台灣成熟的直銷模式帶到東南亞，預計8月開幕。可以跟客戶說：我們公司正在往國際發展，不是小公司，是有計畫、有未來性的事業。",
-    date: "2026/07/22",
-    isNew: true
-  },
-  {
-    category: "company",
-    title: "葡萄王全年營收有望挑戰百億元",
-    body: "法人分析，受惠代工業務、自有品牌及馬來西亞直銷市場開幕等成長動能，葡萄王(1707)全年營收有機會挑戰百億元。公司111年營收已經超過百億，代表這是一家財務穩健、持續成長的上市公司。",
-    date: "2026/07/14",
-    isNew: true
-  },
-  {
-    category: "company",
-    title: "葡萄王國際發明展奪雙金＋特別獎",
-    body: "在2026阿基米德國際發明展中，葡萄王一舉拿下雙金獎與特別獎，證明研發實力受到國際肯定。這是很好的「品牌背書」素材，讓客戶知道我們用的產品是有實力的公司做出來的。",
+    body: "葡眾推出全新品牌「UVACO 葡眾」，並將於馬來西亞吉隆坡設立營運中心，把台灣成熟的直銷模式帶向東南亞。",
     date: "2026/07",
-    isNew: true
+    detail: [
+      "葡眾企業宣布推出全新品牌「UVACO 葡眾」，同時將於馬來西亞吉隆坡設立營運中心，作為拓展東南亞市場的第一站。",
+      "選擇馬來西亞，主要是當地語言、文化與台灣相近，加上直銷制度成熟、市場潛力可觀，適合把台灣累積多年的經營模式帶過去。",
+      "跟客戶聊天時可以自然帶到：「我們公司最近要往國際發展了，感覺不是小打小鬧，是有計畫地在成長。」用公司的成長，帶出一個正在往前走、值得信任的印象。"
+    ]
   },
   {
-    category: "product",
+    title: "葡萄王全年營收有機會挑戰百億元",
+    body: "法人分析，受惠代工、自有品牌及馬來西亞市場開幕等動能，葡萄王全年營收可望持續成長。",
+    date: "2026/07",
+    detail: [
+      "根據財經媒體報導，法人看好葡萄王受惠代工業務、自有品牌及馬來西亞直銷市場開幕等成長動能，全年營收有機會挑戰百億元。",
+      "要留意的是，這是法人自行推算的預估數字，公司也特別澄清正式財務資訊仍須以公開資訊觀測站公告為準，公司111年的營收已經超過百億元。",
+      "跟客戶分享時，重點不是強調一個確切數字，而是讓對方感受到：這是一家有實際財報基礎、持續在成長的上市公司，不是來路不明的小公司。"
+    ]
+  },
+  {
+    title: "2026阿基米德國際發明展 雙金＋特別獎",
+    body: "葡萄王在國際發明展中拿下雙金獎與特別獎，研發實力受到國際肯定。",
+    date: "2026/07",
+    detail: [
+      "葡萄王在2026阿基米德國際發明展中一舉拿下雙金獎與特別獎，是公司研發能量持續受到國際評審肯定的成果。",
+      "這類國際獎項可以當作很自然的「話題切入點」，因為它是客觀、第三方頒發的榮譽，比自己說「我們產品很好」更有說服力。",
+      "分享時可以用輕鬆語氣帶過：「欸你知道嗎，我們公司這次又在國際發明展拿獎了耶」，讓對方感覺到這是分享好消息，而不是推銷。"
+    ]
+  },
+  {
+    title: "從康貝特到保健食品：葡萄王超過半世紀的轉型故事",
+    body: "葡萄王1969年創立，從機能飲料起家，一路轉型為研發、代工、品牌三位一體的生技公司。",
+    date: "品牌故事",
+    detail: [
+      "葡萄王在1969年創立，早期以「康貝特」機能飲料聞名台灣市場，「康貝特喝了再上」是當年許多人琅琅上口的廣告詞。",
+      "隨著市場競爭加劇，公司選擇往生物科技研發方向轉型，1991年成立生物工程中心，投入發酵技術與菌種研發，逐步發展出益生菌、靈芝等保健食品產品線。",
+      "這個故事很適合用來跟客戶說明：我們背後的公司不是憑空冒出來的新創，而是經過幾十年市場考驗、願意持續轉型升級的老牌企業。"
+    ]
+  },
+  {
+    title: "葡眾：深耕台灣超過25年的直銷事業",
+    body: "葡眾企業成立於1993年，1998年正式轉型為多層次傳銷公司，是台灣經營時間較久的直銷業者之一。",
+    date: "公司沿革",
+    detail: [
+      "葡眾企業股份有限公司成立於1993年，最初是葡萄王生技轉投資的子公司，1998年正式轉型為多層次傳銷公司，向公平交易委員會報備經營。",
+      "經營超過25年，代表公司經歷過台灣直銷產業的多次市場變化，制度與經驗相對成熟，這也是可以跟新朋友分享「為什麼選這家公司」的理由之一。",
+      "提到年資時，建議搭配具體的產品或服務優勢一起說明，會比單純強調「歷史悠久」更有說服力。"
+    ]
+  },
+  {
+    title: "生物科技研究所：發酵技術是核心競爭力",
+    body: "葡萄王的生物工程中心（現生物科技研究所）長期投入發酵技術研發，是產品品質的幕後功臣。",
+    date: "研發實力",
+    detail: [
+      "葡萄王在1991年成立生物工程中心（現為生物科技研究所），專注發酵技術研發，透過菌種改良、栽培、發酵量產等流程，逐步提升生產效率與品質穩定度。",
+      "除了自有品牌，公司也承接其他業者的代工（ODM／OEM）業務，等於同時服務自己和其他品牌客戶，某種程度反映了研發與生產能力受到業界認可。",
+      "跟客戶介紹產品時，可以用「這是有自己研究團隊在把關的」角度切入，而不是只講產品功效，會顯得更專業、更可信。"
+    ]
+  },
+  {
+    title: "食品安全把關：認證與檢驗服務",
+    body: "官網持續公布最新認證與食品檢驗相關資訊，展現公司對品質控管的重視。",
+    date: "品質管理",
+    detail: [
+      "葡萄王官網設有專門的「最新認證」與「食品檢驗服務」頁面，定期公布相關檢驗與認證資訊，讓消費者可以查詢產品的品質把關流程。",
+      "在保健食品市場，認證和檢驗紀錄是消費者判斷一家公司是否值得信賴的重要依據之一。",
+      "如果客戶對產品安全性有疑慮，可以引導他們直接查詢官網的認證資訊，用公開透明的方式建立信任，會比自己口頭保證更有力。"
+    ]
+  },
+  {
+    title: "公益行動：企業社會責任的軟性連結",
+    body: "葡萄王持續投入公益活動，用實際行動回饋社會，也是很好的品牌形象素材。",
+    date: "企業社會責任",
+    detail: [
+      "葡萄王官網長期更新公益活動相關訊息，顯示公司在本業之外，也持續投入社會回饋。",
+      "這類內容很適合用來做「軟性連結」：不直接談產品或事業，而是分享公司做的好事，讓對方對品牌產生好感，之後聊事業或產品時會更自然。",
+      "例如可以在群組或社群分享公司的公益消息，附上一句自己的感想，而不是硬要帶入招募或銷售的目的。"
+    ]
+  }
+];
+
+const productItems = [
+  {
     title: "益生菌怎麼挑？5大科學原則",
-    body: "官網整理了挑選益生菌的科學原則（菌株、菌數、活性、耐胃酸、有無實驗佐證），很適合直接分享給有在幫小孩或長輩挑保健品的朋友，用「衛教」的角度切入，而不是直接推銷。",
-    date: "持續更新",
-    isNew: false
+    body: "官網整理了挑選益生菌的科學原則，很適合用衛教角度分享給朋友，而不是直接推銷。",
+    date: "產品知識",
+    detail: [
+      "挑選益生菌時，一般會建議留意幾個面向：菌株是否明確標示、菌數是否足夠、菌種是否具有耐胃酸耐膽鹽的特性，以及是否有相關的實驗或文獻佐證。",
+      "把這些知識分享給朋友時，重點是幫助對方學會「怎麼挑」，而不是直接說「一定要買我的產品」，這樣對方會覺得你是真心在幫忙，而不是在推銷。",
+      "分享完知識後，可以很自然地補一句「我自己是吃這款」，讓對方自己決定要不要進一步了解，而不是強力推銷。"
+    ]
   },
   {
-    category: "product",
-    title: "葡萄王8支黃金專利菌株全解析",
-    body: "葡萄王擁有8支專利菌株，這是自家研發、別人代工不到的核心技術。跟客戶介紹產品時，可以強調「專利菌株」是公司幾十年研發的成果，不是隨便一家工廠都做得出來。",
-    date: "持續更新",
-    isNew: false
+    title: "葡萄王8支黃金專利菌株解析",
+    body: "葡萄王擁有多支專利菌株，是公司長期研發累積的核心技術資產。",
+    date: "產品知識",
+    detail: [
+      "葡萄王擁有多支專利菌株，這些都是公司生物科技研究所長期投入篩選、培養、驗證所累積的成果，並非隨意採購的原料可以取代。",
+      "跟客戶介紹產品時，「專利菌株」是一個可以強調的重點，代表這是公司自己研發、有智慧財產權保護的技術，跟一般代工貼牌產品不一樣。",
+      "建議搭配官網的菌株介紹頁面一起分享，讓資訊來源更透明，客戶也可以自行查證，會比只靠口頭介紹更有說服力。"
+    ]
   },
   {
-    category: "script",
+    title: "靈芝王：葡萄王的招牌產品線",
+    body: "葡萄王極品靈芝王長期是公司在靈芝飲品市場的主力商品之一。",
+    date: "產品知識",
+    detail: [
+      "葡萄王極品靈芝王是公司經營多年的招牌產品之一，屬於公司在靈芝相關飲品領域深耕已久的代表性商品。",
+      "分享這類長銷產品時，可以強調它「經得起時間考驗」——不是一時流行的新品，而是長期有一群固定客群持續回購的產品。",
+      "提醒自己：介紹保健食品時，用「調養」「保養」這類詞會比宣稱「治療」「療效」更恰當，保健食品依法不能宣稱療效，這樣分享也比較安心、合規。"
+    ]
+  },
+  {
+    title: "兒童益生菌怎麼挑？家長必看5大原則",
+    body: "官網整理了給家長參考的兒童益生菌挑選原則，適合分享給有小孩的客戶。",
+    date: "產品知識",
+    detail: [
+      "針對兒童保健品，一般會建議家長多留意菌株是否有相關研究支持、劑量是否符合兒童需求、口味與服用方式是否方便小孩接受等面向。",
+      "這類內容很適合分享給身邊有小孩的朋友，用「幫忙做功課」的角度切入，而不是直接推薦某個產品，會讓對方更容易接受。",
+      "如果對方進一步詢問，可以再依照孩子的實際狀況，建議先諮詢醫師或營養師的專業意見，展現你是站在對方立場著想，而不是只想成交。"
+    ]
+  },
+  {
+    title: "天然發酵技術：活菌存活率的幕後功臣",
+    body: "透過菌泥直接噴佈等製程改良，葡萄王持續提升益生菌產品的活菌數與穩定度。",
+    date: "研發技術",
+    detail: [
+      "早期益生菌製程需要經過凍乾、噴乾、復水等多道程序，活菌容易在繁複製程中流失。葡萄王生物工程中心後續開發出菌泥直接噴佈的製程，減少乾燥次數，讓活菌數得以提升。",
+      "這類「製程創新」的故事，其實比單純講「我們菌數很高」更有記憶點，因為它說明了「為什麼」品質會比較穩定，而不是只有一句廣告詞。",
+      "跟對產品有疑問的客戶聊天時，可以用這個故事說明公司在背後做了哪些努力，讓對方感受到專業度，而不只是銷售話術。"
+    ]
+  },
+  {
+    title: "保健食品的認證與檢驗，該怎麼看？",
+    body: "了解保健食品的認證與檢驗機制，可以幫助客戶做出更安心的選擇。",
+    date: "消費知識",
+    detail: [
+      "市面上的保健食品良莠不齊，一般會建議消費者留意產品是否有明確的成分標示、來源是否可查證，以及廠商是否公開相關的檢驗或認證資訊。",
+      "分享這類消費知識時，可以先站在「幫助對方判斷」的角度，而不是急著介紹自家產品，等對方對你建立信任後，自然會想進一步了解你在用的東西。",
+      "誠實是最好的策略：如果自己也不確定某個細節，可以說「這個我再幫你確認」，而不是隨口保證，長期下來客戶會更信任你。"
+    ]
+  },
+  {
+    title: "腸胃保養的基本觀念",
+    body: "從日常飲食與生活習慣談腸胃保養，用衛教角度自然帶出保健食品的角色。",
+    date: "健康知識",
+    detail: [
+      "腸胃保養一般會建議從規律作息、均衡飲食、足夠水分攝取這些基本生活習慣做起，保健食品可以作為日常飲食之外的輔助，而不是取代正常飲食。",
+      "分享這類健康觀念時，語氣可以像朋友聊天一樣自然，例如「最近工作壓力大，腸胃也要顧一下」，再帶到自己平常怎麼保養。",
+      "要提醒自己：保健食品不能取代正常飲食與醫療，如果對方有實際腸胃不適的狀況，還是要建議他先就醫，這樣分享才是真的為對方著想。"
+    ]
+  },
+  {
+    title: "免疫力保養的基礎知識",
+    body: "透過睡眠、運動、飲食等日常習慣談免疫力保養，是很自然的健康話題切入點。",
+    date: "健康知識",
+    detail: [
+      "免疫力保養一般會提到睡眠充足、規律運動、均衡飲食、壓力管理等基本生活習慣，這些都是不需要靠產品也能做到的日常保養方式。",
+      "先分享這些「不用花錢」的保養觀念，會讓對方覺得你是真心關心他，而不是只想賣東西，之後再自然帶到你自己額外會補充的保健食品。",
+      "避免使用「增強免疫力可以預防生病」這類過度保證的說法，用「日常保養」「調整體質」這類語氣會更恰當，也比較不會誤導對方。"
+    ]
+  }
+];
+
+const scriptItems = [
+  {
     title: "用「國際大獎」自然開場",
-    body: "「欸你知道嗎，我們公司產品今年又在國際發明展拿了兩面金牌耶，之前吃的益生菌真的不是叫假的～」——用分享好消息的口吻切入，比直接推銷產品更自然，也更容易讓對方主動問下去。",
+    body: "用分享好消息的口吻切入，比直接推銷產品更容易讓對方主動問下去。",
     date: "話術靈感",
-    isNew: false
+    detail: [
+      "開場範例：「欸你知道嗎，我們公司產品今年又在國際發明展拿了兩面金牌耶，之前吃的東西感覺真的不是叫假的～」",
+      "這種開場的重點是「分享」而不是「推銷」，用輕鬆的語氣帶出好消息，讓對方好奇主動發問，而不是一開始就介紹產品規格。",
+      "如果對方沒有追問，也不用勉強繼續講下去，保持輕鬆自然的互動，比急著成交更能維持長期關係。"
+    ]
   },
   {
-    category: "script",
     title: "用「東南亞展店」聊未來性",
-    body: "「我們公司最近要去馬來西亞開分公司了，感覺越做越大耶，如果你也想找一個穩定又有前景的事業，要不要聽我跟你聊聊看？」——用公司成長來帶出邀約，讓對方感受到這是長期經營的事業，不是一時的。",
+    body: "用公司的成長故事帶出邀約，讓對方感受到這是長期經營的事業。",
     date: "話術靈感",
-    isNew: false
+    detail: [
+      "開場範例：「我們公司最近要去馬來西亞開分公司了，感覺越做越大耶，如果你也想找一個穩定又有前景的事業，要不要聽我跟你聊聊看？」",
+      "邀約時，誠實說明這是一個需要投入時間經營的事業，收入會因為每個人的投入程度不同而有差異，不要用「保證賺錢」這類過度承諾的說法。",
+      "讓對方知道你是基於信任才分享這個機會，而不是為了業績勉強對方，會讓關係走得更長遠。"
+    ]
   },
   {
-    category: "script",
     title: "日常關心式開場，不急著推產品",
-    body: "與其一開口就介紹產品，不如先關心對方最近身體、生活狀況，聽聽對方真正的需求，再自然地分享「我自己在用的東西」。先建立信任，客戶才會願意長期跟著你，也比較不會覺得有壓力。",
+    body: "先關心對方的生活狀況，聽懂真正的需求，再自然分享自己在用的東西。",
     date: "話術靈感",
-    isNew: false
+    detail: [
+      "與其一開口就介紹產品，不如先問候對方最近身體、工作、家庭狀況，真心聽對方分享，再視情況自然帶到「我自己最近在用的東西」。",
+      "這種方式需要一點耐心，效果不會馬上顯現，但長期下來建立的信任感，會讓客戶更願意主動詢問，而不是感覺被推銷。",
+      "如果對方目前沒有需求，也可以單純維持朋友關係，不用每次見面都提產品，讓互動保持自然。"
+    ]
+  },
+  {
+    title: "用真實使用心得分享，避免誇大",
+    body: "誠實分享自己的使用感受，是建立信任最快也最持久的方式。",
+    date: "話術靈感",
+    detail: [
+      "分享心得時，建議只講自己實際感受到的部分，例如作息、飲食習慣的搭配，避免使用「治好」「根治」這類醫療用語，保健食品依法不能宣稱療效。",
+      "如果自己還沒有明顯感受，也可以誠實地說「我才剛開始吃，還在觀察」，誠實比誇大更容易建立長期信任。",
+      "每個人體質不同，效果本來就會因人而異，跟客戶說清楚這件事，反而會讓對方覺得你是可以信任的人，而不是為了成交什麼都敢講。"
+    ]
+  },
+  {
+    title: "傾聽式邀約：先問需求再推薦",
+    body: "透過提問了解對方真正的困擾，再判斷產品或事業是否真的適合對方。",
+    date: "話術靈感",
+    detail: [
+      "可以先問對方「最近生活/工作上有沒有什麼想調整的地方？」，認真聽完之後，再判斷產品或事業機會是不是真的適合對方，而不是每個人都用同一套說詞推銷。",
+      "如果聽完發現對方目前沒有需求，也可以誠實告訴對方「這個可能現在不是你需要的」，長期來看，這種誠實的態度反而更容易累積信任與轉介紹。",
+      "傾聽式邀約需要多一點耐心，但成交後的客戶關係通常會更穩固，也比較不會有事後的抱怨或糾紛。"
+    ]
+  },
+  {
+    title: "誠實說明事業模式，不做收入保證",
+    body: "讓對方了解這是需要投入時間與努力經營的事業，避免誇大收入承諾。",
+    date: "話術靈感",
+    detail: [
+      "邀約加入事業時，建議誠實說明：這是一個需要花時間學習、經營人脈、持續努力的事業，不是輕鬆就能有穩定收入的捷徑。",
+      "避免使用「保證月入多少」「輕鬆賺大錢」這類說法，這不只是誠信問題，也涉及公平交易法對多層次傳銷業者的規範，過度誇大收入承諾可能有法律風險。",
+      "把期待值設定清楚，反而會篩選出真正認同這份事業、願意長期投入的夥伴，對雙方都比較健康。"
+    ]
+  },
+  {
+    title: "老客戶維繫：定期關心，不只是催單",
+    body: "透過定期問候與追蹤使用心得，建立長期穩定的客戶關係。",
+    date: "話術靈感",
+    detail: [
+      "維繫老客戶時，可以定期關心對方「最近吃得還習慣嗎」「有沒有感覺到什麼變化」，而不是只有在要補貨的時候才聯絡。",
+      "如果客戶反應效果不如預期，先認真傾聽並如實回應，不要急著否定對方的感受或硬拗效果，誠實面對問題才能維持長期信任。",
+      "長期經營的客戶關係，往往比短期衝業績更能帶來穩定的口碑與轉介紹，值得花時間慢慢累積。"
+    ]
+  },
+  {
+    title: "用公益形象做軟性連結",
+    body: "分享公司的公益行動，用真誠的角度拉近與對方的距離，而非直接推銷。",
+    date: "話術靈感",
+    detail: [
+      "可以在聊天或社群分享公司近期的公益活動消息，附上自己的一句感想，例如「沒想到公司也有在做這個，滿有意義的」。",
+      "這種軟性分享的重點是傳遞價值觀，而不是導向購買或加入，讓對方單純認識這家公司的另一面，之後聊產品或事業會更自然、也更不容易讓人反感。",
+      "軟性連結需要長期累積，不用急著看到成效，把它當作經營關係的一部分即可。"
+    ]
   }
 ];
 
 /* ========================================================= */
 
+const allItems = [
+  ...companyItems.map(i => ({...i, category:"company"})),
+  ...productItems.map(i => ({...i, category:"product"})),
+  ...scriptItems.map(i => ({...i, category:"script"}))
+];
+
 const catLabel = {company:"公司動態", product:"產品知識", script:"銷售話術"};
 
+// 依照「今天的日期」計算出一個固定但每天不同的索引，讓今日精選每天輪替、不重複，
+// 直到把所有內容輪過一遍才會重新循環（目前共 ${allItems.length} 則內容）。
+const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+const heroIndex = daysSinceEpoch % allItems.length;
+const heroItem = allItems[heroIndex];
+
+function openSheet(item){
+  document.getElementById('sheetTag').textContent = catLabel[item.category];
+  document.getElementById('sheetTitle').textContent = item.title;
+  const body = document.getElementById('sheetBody');
+  body.innerHTML = item.detail.map(p => `<p>${p}</p>`).join('');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('show');
+}
+
 function renderHero(){
-  const newest = items.find(i => i.isNew) || items[0];
-  document.getElementById('heroTitle').textContent = newest.title;
-  document.getElementById('heroBody').textContent = newest.body;
+  document.getElementById('heroTitle').textContent = heroItem.title;
+  document.getElementById('heroBody').textContent = heroItem.body;
+  document.getElementById('heroCard').addEventListener('click', () => openSheet(heroItem));
 }
 
 function renderCards(filter){
   const list = document.getElementById('cardList');
   list.innerHTML = '';
-  const filtered = filter === 'all' ? items : items.filter(i => i.category === filter);
+  const filtered = filter === 'all' ? allItems : allItems.filter(i => i.category === filter);
   filtered.forEach(i => {
     const card = document.createElement('div');
     card.className = 'card';
+    const isToday = i === heroItem;
     card.innerHTML = `
       <div class="meta cat-${i.category}">
         <span class="grape-dots"><span></span><span></span><span></span></span>
         <span class="cat-label">${catLabel[i.category]}</span>
-        ${i.isNew ? '<span class="newbadge">本週新增</span>' : ''}
+        ${isToday ? '<span class="newbadge">今日精選</span>' : ''}
       </div>
       <h3>${i.title}</h3>
       <p>${i.body}</p>
+      <div class="readmore">點一下看完整內容 →</div>
       <div class="date">${i.date}</div>
     `;
+    card.addEventListener('click', () => openSheet(i));
     list.appendChild(card);
   });
 }
@@ -341,6 +647,11 @@ document.getElementById('chips').addEventListener('click', (e) => {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   renderCards(btn.dataset.cat);
+});
+
+document.getElementById('closeBtn').addEventListener('click', closeSheet);
+document.getElementById('overlay').addEventListener('click', (e) => {
+  if(e.target.id === 'overlay') closeSheet();
 });
 
 renderHero();
