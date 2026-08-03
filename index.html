@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>葡眾每日靈感</title>
+<style>
+  :root{
+    --bg: #FBF6EF;
+    --ink: #2B1B24;
+    --ink-soft: #5C4A54;
+    --wine: #5B2340;
+    --wine-deep: #3D1729;
+    --gold: #B98B2E;
+    --gold-soft: #EFDFB8;
+    --green: #4F7942;
+    --card-bg: #FFFFFF;
+    --chip-bg: #F1E4D8;
+    --line: #E7D9CB;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    font-size: 18px;
+    line-height: 1.65;
+    padding-bottom: 60px;
+  }
+
+  h1,h2,h3{
+    font-family: "Noto Serif TC", "Source Han Serif TC", serif;
+    color: var(--wine-deep);
+    margin: 0;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    background: linear-gradient(160deg, var(--wine) 0%, var(--wine-deep) 100%);
+    color: #F9EEDD;
+    padding: 28px 20px 34px;
+    position: relative;
+    overflow: hidden;
+  }
+  header .grape-motif{
+    position:absolute;
+    right: -18px;
+    top: -10px;
+    opacity: 0.18;
+  }
+  header .eyebrow{
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--gold-soft);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  header h1{
+    color: #FFFDF8;
+    font-size: 28px;
+    line-height: 1.3;
+  }
+  header .date{
+    margin-top: 10px;
+    font-size: 15px;
+    color: #E6C9D3;
+  }
+
+  /* ---------- Hero: 今日靈感 ---------- */
+  .hero-wrap{
+    padding: 0 16px;
+    margin-top: -20px;
+  }
+  .hero{
+    background: var(--card-bg);
+    border-radius: 18px;
+    padding: 22px 20px;
+    box-shadow: 0 10px 30px rgba(61,23,41,0.15);
+    border: 1px solid var(--line);
+    animation: rise 0.5s ease;
+  }
+  @keyframes rise{
+    from{opacity:0; transform: translateY(10px);}
+    to{opacity:1; transform: translateY(0);}
+  }
+  .hero .tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background: var(--gold-soft);
+    color: #7A5B14;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+  }
+  .hero h2{
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .hero p{
+    color: var(--ink-soft);
+    font-size: 17px;
+    margin: 0;
+  }
+
+  /* ---------- Filter chips ---------- */
+  .chips{
+    display:flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 22px 16px 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chip{
+    flex: 0 0 auto;
+    background: var(--chip-bg);
+    color: var(--wine-deep);
+    border: 1px solid transparent;
+    padding: 9px 16px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip.active{
+    background: var(--wine);
+    color: #FFF6E9;
+  }
+
+  /* ---------- Cards ---------- */
+  main{padding: 10px 16px 0;}
+  .card{
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 18px 20px;
+    margin-bottom: 14px;
+  }
+  .card .meta{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .grape-dots{
+    display:inline-flex;
+    gap: 3px;
+  }
+  .grape-dots span{
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display:inline-block;
+  }
+  .cat-company .grape-dots span{ background: var(--wine); }
+  .cat-product .grape-dots span{ background: var(--green); }
+  .cat-script .grape-dots span{ background: var(--gold); }
+
+  .card .cat-label{
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .card .newbadge{
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: #9A3B12;
+    background: #FCE3D3;
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+  .card h3{
+    font-size: 19px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .card p{
+    color: var(--ink-soft);
+    font-size: 16.5px;
+    margin: 0;
+  }
+  .card .date{
+    font-size: 13px;
+    color: #A08C97;
+    margin-top: 10px;
+  }
+
+  footer{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 30px 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="grape-motif" width="140" height="160" viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="70" cy="20" r="14" fill="#F9EEDD"/>
+    <circle cx="50" cy="42" r="14" fill="#F9EEDD"/>
+    <circle cx="90" cy="42" r="14" fill="#F9EEDD"/>
+    <circle cx="35" cy="66" r="14" fill="#F9EEDD"/>
+    <circle cx="70" cy="66" r="14" fill="#F9EEDD"/>
+    <circle cx="105" cy="66" r="14" fill="#F9EEDD"/>
+    <circle cx="52" cy="90" r="14" fill="#F9EEDD"/>
+    <circle cx="88" cy="90" r="14" fill="#F9EEDD"/>
+    <circle cx="70" cy="112" r="14" fill="#F9EEDD"/>
+  </svg>
+  <div class="eyebrow">今天也要元氣滿滿</div>
+  <h1>葡眾每日靈感</h1>
+  <div class="date" id="todayDate"></div>
+</header>
+
+<div class="hero-wrap">
+  <div class="hero">
+    <div class="tag">✨ 今日靈感</div>
+    <h2 id="heroTitle"></h2>
+    <p id="heroBody"></p>
+  </div>
+</div>
+
+<div class="chips" id="chips">
+  <button class="chip active" data-cat="all">全部</button>
+  <button class="chip" data-cat="company">🍇 公司動態</button>
+  <button class="chip" data-cat="product">🌿 產品知識</button>
+  <button class="chip" data-cat="script">💬 銷售話術</button>
+</div>
+
+<main id="cardList"></main>
+
+<footer>由你親手為媽媽準備 · 每週更新內容</footer>
+
+<script>
+/* =========================================================
+   內容資料區：以後每週要更新，只要在下面陣列新增一個物件即可
+   category 只能填："company"（公司動態）/ "product"（產品知識）/ "script"（銷售話術）
+   isNew 設 true 會顯示「本週新增」標籤，記得下週把舊的改回 false
+========================================================= */
+const items = [
+  {
+    category: "company",
+    title: "UVACO 葡眾品牌升級，插旗馬來西亞吉隆坡",
+    body: "葡眾宣布推出全新品牌「UVACO 葡眾」，並將於馬來西亞吉隆坡設立營運中心，把台灣成熟的直銷模式帶到東南亞，預計8月開幕。可以跟客戶說：我們公司正在往國際發展，不是小公司，是有計畫、有未來性的事業。",
+    date: "2026/07/22",
+    isNew: true
+  },
+  {
+    category: "company",
+    title: "葡萄王全年營收有望挑戰百億元",
+    body: "法人分析，受惠代工業務、自有品牌及馬來西亞直銷市場開幕等成長動能，葡萄王(1707)全年營收有機會挑戰百億元。公司111年營收已經超過百億，代表這是一家財務穩健、持續成長的上市公司。",
+    date: "2026/07/14",
+    isNew: true
+  },
+  {
+    category: "company",
+    title: "葡萄王國際發明展奪雙金＋特別獎",
+    body: "在2026阿基米德國際發明展中，葡萄王一舉拿下雙金獎與特別獎，證明研發實力受到國際肯定。這是很好的「品牌背書」素材，讓客戶知道我們用的產品是有實力的公司做出來的。",
+    date: "2026/07",
+    isNew: true
+  },
+  {
+    category: "product",
+    title: "益生菌怎麼挑？5大科學原則",
+    body: "官網整理了挑選益生菌的科學原則（菌株、菌數、活性、耐胃酸、有無實驗佐證），很適合直接分享給有在幫小孩或長輩挑保健品的朋友，用「衛教」的角度切入，而不是直接推銷。",
+    date: "持續更新",
+    isNew: false
+  },
+  {
+    category: "product",
+    title: "葡萄王8支黃金專利菌株全解析",
+    body: "葡萄王擁有8支專利菌株，這是自家研發、別人代工不到的核心技術。跟客戶介紹產品時，可以強調「專利菌株」是公司幾十年研發的成果，不是隨便一家工廠都做得出來。",
+    date: "持續更新",
+    isNew: false
+  },
+  {
+    category: "script",
+    title: "用「國際大獎」自然開場",
+    body: "「欸你知道嗎，我們公司產品今年又在國際發明展拿了兩面金牌耶，之前吃的益生菌真的不是叫假的～」——用分享好消息的口吻切入，比直接推銷產品更自然，也更容易讓對方主動問下去。",
+    date: "話術靈感",
+    isNew: false
+  },
+  {
+    category: "script",
+    title: "用「東南亞展店」聊未來性",
+    body: "「我們公司最近要去馬來西亞開分公司了，感覺越做越大耶，如果你也想找一個穩定又有前景的事業，要不要聽我跟你聊聊看？」——用公司成長來帶出邀約，讓對方感受到這是長期經營的事業，不是一時的。",
+    date: "話術靈感",
+    isNew: false
+  },
+  {
+    category: "script",
+    title: "日常關心式開場，不急著推產品",
+    body: "與其一開口就介紹產品，不如先關心對方最近身體、生活狀況，聽聽對方真正的需求，再自然地分享「我自己在用的東西」。先建立信任，客戶才會願意長期跟著你，也比較不會覺得有壓力。",
+    date: "話術靈感",
+    isNew: false
+  }
+];
+
+/* ========================================================= */
+
+const catLabel = {company:"公司動態", product:"產品知識", script:"銷售話術"};
+
+function renderHero(){
+  const newest = items.find(i => i.isNew) || items[0];
+  document.getElementById('heroTitle').textContent = newest.title;
+  document.getElementById('heroBody').textContent = newest.body;
+}
+
+function renderCards(filter){
+  const list = document.getElementById('cardList');
+  list.innerHTML = '';
+  const filtered = filter === 'all' ? items : items.filter(i => i.category === filter);
+  filtered.forEach(i => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="meta cat-${i.category}">
+        <span class="grape-dots"><span></span><span></span><span></span></span>
+        <span class="cat-label">${catLabel[i.category]}</span>
+        ${i.isNew ? '<span class="newbadge">本週新增</span>' : ''}
+      </div>
+      <h3>${i.title}</h3>
+      <p>${i.body}</p>
+      <div class="date">${i.date}</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('todayDate').textContent =
+  new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+
+document.getElementById('chips').addEventListener('click', (e) => {
+  const btn = e.target.closest('.chip');
+  if(!btn) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(btn.dataset.cat);
+});
+
+renderHero();
+renderCards('all');
+</script>
+
+</body>
+</html>
